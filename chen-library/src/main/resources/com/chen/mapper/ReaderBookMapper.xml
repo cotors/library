@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd"><!--记住 我的电脑这里只能是http才能出来小鸟-->
+<mapper namespace="com.chen.mapper.ReaderBookMapper">
+
+    <resultMap id="readerBook" type="com.chen.pojo.ReaderBook">
+        <result property="id" column="id"/>
+        <result property="rid" column="rid"/>
+        <result property="bid" column="bid"/>
+        <result property="status" column="status"/>
+        <result property="borrowTime" column="borrow_time"/>
+        <result property="returnTime" column="return_time"/>
+        <association property="reader">
+            <result property="id" column="id"/>
+            <result property="rname" column="rname"/>
+            <result property="password" column="password"/>
+            <result property="rimage" column="rimage"/>
+            <result property="email" column="email"/>
+        </association>
+        <association property="book">
+            <result property="id" column="id"/>
+            <result property="bname" column="bname"/>
+            <result property="stock" column="stock"/>
+            <result property="bimage" column="bimage"/>
+        </association>
+    </resultMap>
+
+    <select id="listAll" resultType="com.chen.pojo.ReaderBook" resultMap="readerBook">
+         select rb.id,r.rname,r.rimage,b.bname,b.bimage,rb.borrow_time,rb.return_time,rb.status,r.email
+         from reader_book rb,book b,reader r
+         <where>
+             and rb.rid=r.id and rb.bid=b.id
+             <if test="readerName!=null and readerName!='' ">
+                 and r.rname like concat('%',#{readerName},'%')
+             </if>
+         </where>
+         order by rb.id asc
+    </select>
+    <select id="queryAll" resultType="com.chen.pojo.MainMenu">
+        select b.type as type ,count(r.rname) as count from book b left join reader_book rb on rb.bid=b.id
+        left join reader r on rb.rid=r.id group by b.type
+    </select>
+    <select id="myBookList" resultType="com.chen.pojo.Book">
+        select DISTINCT b.id,b.bname,b.type,b.author,b.stock,b.language,b.bimage
+        FROM book b,reader r,reader_book rb where  b.id=rb.bid and rb.status=0 and rb.rid=#{userId}
+    </select>
+</mapper>
